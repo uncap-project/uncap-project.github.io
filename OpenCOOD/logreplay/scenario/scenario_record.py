@@ -8,21 +8,13 @@ from logreplay.scenario.scene_manager import SceneManager
 class ScenariosManager:
     def __init__(self, scenario_params):
         self.scene_params = scenario_params
-
         # Hardcode your single scenario folder here:
         self.scenario_folders = [
-            #'/home/po-han/Downloads/OPV2V/validate/2021_08_21_17_30_41' # scene 1
-            #'/home/po-han/Downloads/OPV2V/test/2021_08_23_21_47_19' # scene 2
-            #'/home/po-han/Downloads/OPV2V/test/2021_08_20_21_10_24' # scene 4
-
-            #'/home/po-han/Downloads/OPV2V/test/2021_08_23_15_19_19' # scene 3
-            #'/home/po-han/Downloads/OPV2V/train/2021_08_22_06_43_37' # scene 5
-            #'/home/po-han/Downloads/OPV2V/custom_scenario/2025_09_14_16_04_20' # scene 6
-            #'/home/po-han/Downloads/OPV2V/custom_scenario/2025_10_07_01_09_57' # Scene 8
-            #'/home/po-han/Downloads/OPV2V/custom_scenario/2025_10_07_01_13_20' #scene 9
-            '/home/po-han/Downloads/OPV2V/custom_scenario/2025_09_14_16_23_41' # scene 7
+            "../OPV2V/test/2021_08_23_21_47_19"
         ]
         self.scenario_database = OrderedDict()
+        import logreplay.scenario.scene_manager
+        print("scene manager file:",logreplay.scenario.scene_manager.__file__)
 
         for scenario_folder in self.scenario_folders:
             scene_name = os.path.basename(scenario_folder)

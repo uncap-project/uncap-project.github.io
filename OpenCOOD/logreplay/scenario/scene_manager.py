@@ -320,7 +320,7 @@ class SceneManager:
     def get_vlm_file_path(self, timestamp):
         idx = int(timestamp)
         filename = f"{idx:06d}_vlm.txt"
-        base_path = "/home/po-han/Downloads/OPV2V/vlm_query_testing/scene_7_decisions" # CHANGE THIS EVERY TIME
+        base_path = "../OPV2V/structured_format/2021_08_23_21_47_19" # CHANGE THIS EVERY TIME
         return os.path.join(base_path, filename)
 
     def should_stop_based_on_vlm(self, vlm_text):
@@ -442,6 +442,8 @@ class SceneManager:
             print(f"Error getting ego goal from {ego_goal_filepath} at {cur_timestamp}: {e}")
             return [float('-inf'),float('-inf')]
 
+    # Add this method to your SceneManager class or replace the existing start_simulator section
+
     def start_simulator(self):
         """
         Connect to the carla simulator for log replay.
@@ -480,8 +482,6 @@ class SceneManager:
         new_settings.synchronous_mode = True
         new_settings.fixed_delta_seconds = fixed_delta_seconds
 
-        
-
         self.world.apply_settings(new_settings)
         # set weather if needed
         if weather_config is not None:
@@ -493,15 +493,76 @@ class SceneManager:
         self.spectator = self.world.get_spectator()
         # hd map manager per scene
         self.map_manager = MapManager(self.world,
-                                      self.scenario_params['map'],
-                                      self.output_root,
-                                      self.scene_name)
+                                    self.scenario_params['map'],
+                                    self.output_root,
+                                    self.scene_name)
         
-        record_dir = '/home/po-han/Desktop/Projects/OpenCOOD/logreplay/scenario/metric_record'
+        # ===== FIXED RECORDING SETUP =====
+        # Use absolute path and ensure directory exists
+        record_dir = os.path.abspath('logreplay/scenario/metric_record')
         os.makedirs(record_dir, exist_ok=True)
-        record_path = os.path.join(record_dir, 'recording.log')
-        self.client.start_recorder(record_path, additional_data=True)
-        print(f"[SceneManager] Recording started: {record_path}")
+        
+        # Create unique filename with timestamp
+        record_filename = f'recording_{self.scene_name}.log'
+        record_path = os.path.join(record_dir, record_filename)
+        
+        # Store recording path for later reference
+        self.recording_path = record_path
+        
+        print(f"[SceneManager] Recording directory: {record_dir}")
+        print(f"[SceneManager] Recording file: {record_path}")
+        
+        # Verify directory is writable
+        if not os.access(record_dir, os.W_OK):
+            print(f"[SceneManager] WARNING: Recording directory not writable: {record_dir}")
+        
+        # Start recording with additional_data=True for sensor data
+        try:
+            self.client.start_recorder(record_path, additional_data=True)
+            print(f"[SceneManager] ✓ Recording started successfully")
+            self.recording_active = True
+        except Exception as e:
+            print(f"[SceneManager] ✗ Failed to start recording: {e}")
+            self.recording_active = False
+
+
+    def close(self):
+        """
+        Enhanced close method with proper recording cleanup
+        """
+        # Stop recording FIRST before destroying actors
+        if hasattr(self, 'recording_active') and self.recording_active:
+            try:
+                self.client.stop_recorder()
+                print(f"[SceneManager] Recording stopped")
+                
+                # Verify the file exists and has content
+                if os.path.exists(self.recording_path):
+                    file_size = os.path.getsize(self.recording_path)
+                    file_size_mb = file_size / (1024 * 1024)
+                    print(f"[SceneManager] Recording saved: {self.recording_path}")
+                    print(f"[SceneManager] File size: {file_size_mb:.2f} MB ({file_size} bytes)")
+                    
+                    if file_size == 0:
+                        print(f"[SceneManager] WARNING: Recording file is empty!")
+                else:
+                    print(f"[SceneManager] WARNING: Recording file not found: {self.recording_path}")
+            except Exception as e:
+                print(f"[SceneManager] Error stopping recorder: {e}")
+        
+        # Now clean up world and actors
+        self.world.apply_settings(self.origin_settings)
+        actor_list = self.world.get_actors()
+        for actor in actor_list:
+            try:
+                actor.destroy()
+            except:
+                pass
+        
+        if self.map_manager:
+            self.map_manager.destroy()
+        
+        self.sensor_destory()
 
     def log_accepted_cavs(self, tick_number, accepted_cavs):
         import json
@@ -702,22 +763,22 @@ class SceneManager:
             with open(vlm_path, 'r') as f:
                 vlm_text = f.read()
             stop_flag = self.should_stop_based_on_vlm(vlm_text)
-            # if stop_flag:
-            #     cav_to_stop = "243"
-            #     if cav_to_stop in self.veh_dict and cav_to_stop not in self.stopped_vehicles:
-            #         vehicle = self.veh_dict[cav_to_stop]['actor']
-            #         vehicle.set_autopilot(False)
-            #         vehicle.apply_control(carla.VehicleControl(throttle=0.0, brake=1.0))
-            #         self.stopped_vehicles.add(cav_to_stop)
-            #         print(f"[SceneManager] CAV {cav_to_stop} stopped due to VLM output")
+            if stop_flag:
+                cav_to_stop = "243"
+                if cav_to_stop in self.veh_dict and cav_to_stop not in self.stopped_vehicles:
+                    vehicle = self.veh_dict[cav_to_stop]['actor']
+                    vehicle.set_autopilot(False)
+                    vehicle.apply_control(carla.VehicleControl(throttle=0.0, brake=1.0))
+                    self.stopped_vehicles.add(cav_to_stop)
+                    print(f"[SceneManager] CAV {cav_to_stop} stopped due to VLM output")
 
-            #     cav_to_stop = "2488"
-            #     if cav_to_stop in self.veh_dict and cav_to_stop not in self.stopped_vehicles:
-            #         vehicle = self.veh_dict[cav_to_stop]['actor']
-            #         vehicle.set_autopilot(False)
-            #         vehicle.apply_control(carla.VehicleControl(throttle=0.0, brake=1.0))
-            #         self.stopped_vehicles.add(cav_to_stop)
-            #         print(f"[SceneManager] CAV {cav_to_stop} stopped due to VLM output")
+                cav_to_stop = "2488"
+                if cav_to_stop in self.veh_dict and cav_to_stop not in self.stopped_vehicles:
+                    vehicle = self.veh_dict[cav_to_stop]['actor']
+                    vehicle.set_autopilot(False)
+                    vehicle.apply_control(carla.VehicleControl(throttle=0.0, brake=1.0))
+                    self.stopped_vehicles.add(cav_to_stop)
+                    print(f"[SceneManager] CAV {cav_to_stop} stopped due to VLM output")
 
             #     cav_to_stop = "8690"
             #     if cav_to_stop in self.veh_dict and cav_to_stop not in self.stopped_vehicles:
@@ -940,17 +1001,6 @@ class SceneManager:
         self.veh_dict[veh_id]['actor'].set_transform(transform)
         self.veh_dict[veh_id]['cur_count'] = cur_timestamp
         self.veh_dict[veh_id]['cur_pose'] = transform
-
-    def close(self):
-        self.world.apply_settings(self.origin_settings)
-        actor_list = self.world.get_actors()
-        for actor in actor_list:
-            actor.destroy()
-        self.map_manager.destroy()
-        self.sensor_destory()
-
-        self.client.stop_recorder()
-        print("[SceneManager] Recording stopped")
 
     def sensor_destory(self):
         for veh_id, veh_content in self.veh_dict.items():

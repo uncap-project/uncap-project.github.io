@@ -1,0 +1,8 @@
+name: opencood
+channels:
+  - defaults
+dependencies:
+  - python=3.8
+  - ipykernel
+  - xmlschema
+prefix: /home/po-han/miniconda3/envs/opencood

@@ -72,11 +72,12 @@ class DistanceBetweenVehicles(BasicMetric):
 
                     distances[ego_id][other_id][frame] = dist
 
-        base_name = os.path.splitext(os.path.basename(self._recorder))[0]
+        base_name = "example"
 
         #    Build full output path
+        # print(os.getcwd())
         out_file = os.path.join(
-            "/home/po-han/Desktop/Projects/OpenCOOD/logreplay/scenario/metric_results",
+            "../../OpenCOOD/logreplay/scenario/metric_results/",
             base_name + ".distance_between_vehicles.json"
         )
         # Convert defaultdict to plain dict for JSON
