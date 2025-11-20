@@ -14,6 +14,13 @@ import numpy as np
 import random
 from srunner.metrics.examples.basic_metric import BasicMetric
 
+BASE = os.getcwd()
+
+#reaplce examples:
+ego_vehicle="134"
+collision_vehicle = "150"
+yaml_dir = f"{BASE}/OPV2V/test/2021_08_23_21_47_19/243"
+
 
 class TimeToCollision(BasicMetric):
     """
@@ -41,8 +48,6 @@ class TimeToCollision(BasicMetric):
         max_angle = math.radians(60)  # Field of view cone
         
         
-        tick=67
-        yaml_dir = "/home/po-han/Downloads/OPV2V/test/2021_08_23_21_47_19/243"
         yaml_files = sorted([f for f in os.listdir(yaml_dir) if f.endswith(".yaml")])
         for yf in yaml_files:
             curtick = os.path.splitext(yf)[0] 
@@ -81,20 +86,9 @@ class TimeToCollision(BasicMetric):
                 continue
 
             t = -np.dot(rel_vel, rel_pos) / np.dot(rel_vel, rel_vel)
-            ttc_dict['134']['150'][frame] = t
+            ttc_dict[ego_vehicle][collision_vehicle][frame] = t
             continue
-            if t < 0:
-                continue
 
-            continue
-            ego_ttc_pos = ego_pos + ego_vel * t
-            other_ttc_pos = other_pos + other_vel * t
-            d = np.linalg.norm(ego_ttc_pos - other_ttc_pos)
-
-            if d > 2.0:  # collision distance threshold
-                continue
-
-            ttc_dict[ego_id][other_id][frame] = t
                 
 
         out_file = os.path.splitext(self._recorder)[0] + ".time_to_collision.json"
@@ -103,21 +97,3 @@ class TimeToCollision(BasicMetric):
         with open(out_file, "w") as f:
             json.dump(json_safe, f, indent=2)
         print(f"[TimeToCollision] Saved -> {out_file}")
-
-        if '134' in ttc_dict and '150' in ttc_dict['134'] and ttc_dict['134']['150']:
-            frames, ttcs = zip(*sorted(ttc_dict['134']['150'].items()))
-            x_vals = range(len(frames))   # 0, 1, 2, ..., N-1
-            plt.plot(x_vals, ttcs, label="ego 134 vs car 150")
-
-            print("Plotted TTC values:", list(zip(frames, ttcs)))
-        else:
-            print("⚠️ No TTC values computed for ego 134 vs car 150.")
-
-        plt.ylabel("TTC [s]")
-        plt.xlabel("Frame number")
-        plt.ylim(0,1.2)
-        plt.title("Time-to-Collision for ego vehicle 134")
-        plt.legend()
-        plt.show()
-
-            

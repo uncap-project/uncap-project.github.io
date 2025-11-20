@@ -2,47 +2,17 @@ import os, json, math, random, yaml
 import numpy as np
 from srunner.metrics.examples.basic_metric import BasicMetric
 
+BASE = os.getcwd()
+
+#replace example
 scenario_name = "2021_08_20_21_10_24"
-SCENARIO_ROOT = "/home/po-han/Downloads/OPV2V/test/" + scenario_name
+SCENARIO_ROOT = f"{BASE}/OPV2V/test/" + scenario_name
 
 DIST_TOL_M = 2.0
 ANG_TOL_DEG = 25.0
 END_TOL_M = 1.5
 
 import matplotlib.pyplot as plt
-
-def debug_plot(plan_xy, ego_xy_list, projections, tick_idx, cav_id, vehicle_positions=None,
-               outdir="/home/po-han/Downloads/OPV2V/debug_metrics/"):
-    os.makedirs(outdir, exist_ok=True)
-
-    plt.figure(figsize=(6,6))
-    plt.axis("equal")
-
-    # plan trajectory
-    plt.plot(plan_xy[:,0], plan_xy[:,1], "-o", color="blue", label="Plan Trajectory")
-
-    # ego true positions
-    if ego_xy_list:
-        ex, ey = zip(*ego_xy_list)
-        plt.scatter(ex, ey, c="red", label="Ego positions", s=20)
-
-    # projections
-    if projections:
-        px, py = zip(*projections)
-        plt.scatter(px, py, c="green", label="Projections", s=30, marker="x")
-
-    # other vehicles
-    if vehicle_positions:
-        vx, vy = zip(*vehicle_positions)
-        plt.scatter(vx, vy, c="purple", label="Other vehicles", s=15, alpha=0.6)
-
-    plt.legend()
-    plt.title(f"Tick {tick_idx} (CAV {cav_id})")
-    plt.xlim(-250,-150)
-    plt.ylim(200,300)
-    plt.savefig(os.path.join(outdir, f"tick_{cav_id}_{tick_idx:05d}.png"))
-    plt.close()
-
 
 def load_yaml(path):
     with open(path, "r") as f:
@@ -171,9 +141,6 @@ def fulfill_one_plan(plan_xy, future_ticks_data, log, cav_id, N_yaml, tick_idx):
                 x, y = float(vinfo["location"][0]), float(vinfo["location"][1])
                 vehicle_positions.append((x,y))
 
-    # call once per tick
-    debug_plot(plan_xy, ego_positions, proj_positions, tick_idx,cav_id,vehicle_positions)
-
     return 100.0 * (next_wp / M)
 
 def per_tick_plan_fulfillment_for_cav(cav_dir, log, cav_id):
@@ -207,14 +174,3 @@ class TrafficLightViolationCount(BasicMetric):
                 results[cav] = mean_pct
             print(cav, mean_pct)
 
-    
-
-    
-    # #This is for yaml info
-    # if "true_ego_pos" in data and isinstance(data["true_ego_pos"], (list, tuple)) and len(data["true_ego_pos"]) >= 5:
-    #     x, y = float(data["true_ego_pos"][0]), float(data["true_ego_pos"][1])
-    #     yaw_deg = float(data["true_ego_pos"][4])
-        
-    #     return np.array([x, y], dtype=float), yaw_deg
-    # return None, None
-    
