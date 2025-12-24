@@ -1,4 +1,4 @@
-# uncap-project.github.io
+# UNCAP: Uncertainty-Guided Planning Using Natural Language Communication for Cooperative Autonomous Vehicles
 
 Please follow the installation of [Opencood](OpenCOOD/README.md)
 
