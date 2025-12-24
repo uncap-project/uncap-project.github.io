@@ -7,7 +7,7 @@
     ·
     Kushagra Gupta*
     <br>
-    Rohan Siva
+    <a href="https://www.linkedin.com/in/rohan-siva">Rohan Siva</a>
     ·
     <a href="https://www.linkedin.com/in/milan-daniel/">Daniel Milan</a>
     ·
