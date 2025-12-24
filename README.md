@@ -28,6 +28,11 @@
     <b><i>AAMAS 2026</i></b>
     <h3 align="center"><a href="https://uncap-project.github.io/">Project Page</a> | <a href="https://arxiv.org/abs/2510.12992">arXiv</a> | <a href="https://openreview.net/forum?id=aYlKa5ppLh">OpenReview</h3>
 </p>
+        
+## Framework
+
+<img src="docs/static/images/framework.png" alt="Framework Overview" width="800">
+
 
 ## Setup
 
