@@ -44,8 +44,8 @@ class SceneManager:
         self.tick_numbers = [] 
         self.accepted_cavs_per_tick = []
 
-        self.accepted_cav_log_file = "/home/po-han/Desktop/Projects/simulation/scenario_runner/accepted_cav_test_20_21_10_24.json"
-        self.bandwidth_log_file = "/home/po-han/Desktop/Projects/simulation/scenario_runner/bandwidth_test_images_20_21_10_24.json"
+        self.accepted_cav_log_file = "../simulation/scenario_runner/accepted_cavs.json"
+        self.bandwidth_log_file = "../simulation/scenario_runner/bandwidth_test_images.json"
 
         self.bandwidth_metrics = {
             # Accepted CAVs only strategy
