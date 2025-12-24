@@ -16,9 +16,9 @@
     <a href="https://utaustin-swarmlab.github.io/people/sandeep_chinchali/index.html">Sandeep P. Chinchali</a>
     ·
     <a href="https://clearoboticslab.github.io/people/david_fridovich-keil/index.html">David Fridovich-Keil</a>
-    ·
-    <a href="https://express.adobe.com/page/CAdrFMJ9QeI2y/">Zhangyang Wang</a>
     <br>
+    <a href="https://express.adobe.com/page/CAdrFMJ9QeI2y/">Zhangyang Wang</a>
+    ·
     <a href="https://www.ae.utexas.edu/people/faculty/faculty-directory/topcu">Ufuk Topcu</a>
     <br>
     <em>*Equal contribution</em>
