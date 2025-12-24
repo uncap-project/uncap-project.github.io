@@ -8,4 +8,4 @@ conda activate opencood
 
 pip install ultralytics openai python-dotenv
 ```
-Sample code in: [OPV2V/run.ipynb](OPV2V/run.ipynb)
+Demo Notebook in: [OPV2V/run.ipynb](OPV2V/run.ipynb)
