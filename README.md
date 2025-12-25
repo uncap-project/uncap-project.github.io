@@ -5,8 +5,8 @@
     ·
     <a href="https://d31003.github.io/">Po-han Li*</a>
     ·
-    Kushagra Gupta*
-    <br>
+    <a href="https://scholar.google.com/citations?user=JfH0nfEAAAAJ&hl=en">Kushagra Gupta*</a>
+    .
     <a href="https://www.linkedin.com/in/rohan-siva">Rohan Siva</a>
     ·
     <a href="https://www.linkedin.com/in/milan-daniel/">Daniel Milan</a>
