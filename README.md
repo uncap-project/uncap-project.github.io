@@ -25,7 +25,7 @@
     <br>
     <em>*Equal contribution</em>
     <br>
-    <b><i>AAMAS 2026</i></b>
+    <b><i>AAMAS 2026 (Oral)</i></b>
     <h3 align="center"><a href="https://uncap-project.github.io/">Project Page</a> | <a href="https://arxiv.org/abs/2510.12992">arXiv</a> | <a href="https://openreview.net/forum?id=aYlKa5ppLh">OpenReview</h3>
 </p>
         
