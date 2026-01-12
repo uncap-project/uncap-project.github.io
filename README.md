@@ -1,4 +1,4 @@
-# UNCAP: Uncertainty-Guided Planning Using Natural Language Communication for Cooperative Autonomous Vehicles
+# UNCAP: Uncertainty-Guided Neurosymbolic Planning Using Natural Language Communication for Cooperative Autonomous Vehicles
 
 <p align="center">
     <a href="https://neel1302.github.io/">Neel P. Bhatt*</a>
