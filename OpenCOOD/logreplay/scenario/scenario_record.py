@@ -40,6 +40,8 @@ class ScenariosManager:
         self.scenario_database = OrderedDict()
         
         for scenario_folder in self.scenario_folders:
+            if not os.path.isabs(scenario_folder):
+                scenario_folder = os.path.abspath(os.path.join('../OPV2V', scenario_folder))
             scene_name = os.path.basename(scenario_folder)
             self.scenario_database[scene_name] = OrderedDict()
             
