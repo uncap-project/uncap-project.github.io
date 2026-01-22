@@ -14,6 +14,10 @@ from opencood.hypes_yaml.yaml_utils import load_yaml
 
 import json
 
+import sys
+sys.path.insert(0, os.path.abspath('../../../OPV2V'))
+from scene_config import get_scene_config
+
 class SceneManager:
     """
     Manager for each scene for spawning, moving and destroying.
@@ -35,7 +39,7 @@ class SceneManager:
 
     
     
-    def __init__(self, folder, scene_name, collection_params, scenario_params):
+    def __init__(self, folder, scene_name, collection_params, scenario_params, scene_config=None):
         self.scene_name = scene_name
         self.town_name = find_town(scene_name)
         self.collection_params = collection_params
@@ -43,6 +47,8 @@ class SceneManager:
         self.cav_id_list = []
         self.tick_numbers = [] 
         self.accepted_cavs_per_tick = []
+
+        self.scene_config = scene_config or {}
 
         self.accepted_cav_log_file = "../simulation/scenario_runner/accepted_cavs.json"
         self.bandwidth_log_file = "../simulation/scenario_runner/bandwidth_test_images.json"
@@ -318,9 +324,16 @@ class SceneManager:
             print(f"Error writing bandwidth metrics file: {e}")
 
     def get_vlm_file_path(self, timestamp):
+        """Get VLM file path from scene config if available."""
+        if 'vlm_base_path' in self.scene_config:
+            idx = int(timestamp)
+            filename = f"{idx:06d}_vlm.txt"
+            return os.path.join(self.scene_config['vlm_base_path'], filename)
+        
+        # Fallback to relative path
         idx = int(timestamp)
         filename = f"{idx:06d}_vlm.txt"
-        base_path = "../OPV2V/structured_format/2021_08_23_21_47_19" # CHANGE THIS EVERY TIME
+        base_path = "../../../OPV2V/structured_format/2021_08_23_21_47_19"
         return os.path.join(base_path, filename)
 
     def should_stop_based_on_vlm(self, vlm_text):
@@ -392,55 +405,40 @@ class SceneManager:
                     
         return accepted
 
-    def get_ego_goal(self, ego_goal_filepath, cur_timestamp):
-        """
-        Get the ego goal position from the plan_trajectory in the ego CAV's YAML file.
+    def get_ego_goal(self, cur_timestamp):
+        """Get ego goal using filepath from scene config."""
+        if 'ego_goal_filepath' not in self.scene_config:
+            return [float('-inf'), float('-inf')]
         
-        Parameters
-        ----------
-        ego_goal_filepath : str
-            The file path to the ego CAV's folder containing YAML files
-        cur_timestamp : str
-            Current timestamp string (e.g., "000069")
-            
-        Returns
-        -------
-        list[float]
-            The goal position [x, y] from the last point in plan_trajectory
-        """
+        ego_goal_filepath = self.scene_config['ego_goal_filepath']
+        
         try:
-            # Construct the file path
             ego_yaml_file = os.path.join(ego_goal_filepath, f"{cur_timestamp}.yaml")
             
-            # Check if file exists
             if not os.path.exists(ego_yaml_file):
                 print(f"Warning: Ego goal file not found: {ego_yaml_file}")
-                return [float('-inf'),float('-inf')]  # fallback
-                
-            # Load the YAML content
+                return [float('-inf'), float('-inf')]
+            
             ego_content = load_yaml(ego_yaml_file)
             
-            # Extract plan_trajectory
             if 'plan_trajectory' not in ego_content:
                 print(f"Warning: No plan_trajectory found in {ego_yaml_file}")
-                return [float('-inf'),float('-inf')]  # fallback
-                
+                return [float('-inf'), float('-inf')]
+            
             plan_trajectory = ego_content['plan_trajectory']
             
-            # Check if trajectory has points
             if not plan_trajectory or len(plan_trajectory) == 0:
                 print(f"Warning: Empty plan_trajectory in {ego_yaml_file}")
-                return [float('-inf'),float('-inf')]  # fallback
-                
-            # Get the last point and extract x, y coordinates
+                return [float('-inf'), float('-inf')]
+            
             last_point = plan_trajectory[-3]
-            ego_goal = [last_point[0], last_point[1]]  # x, y only
+            ego_goal = [last_point[0], last_point[1]]
             
             return ego_goal
             
         except Exception as e:
-            print(f"Error getting ego goal from {ego_goal_filepath} at {cur_timestamp}: {e}")
-            return [float('-inf'),float('-inf')]
+            print(f"Error getting ego goal at {cur_timestamp}: {e}")
+            return [float('-inf'), float('-inf')]
 
     # Add this method to your SceneManager class or replace the existing start_simulator section
 
@@ -582,22 +580,16 @@ class SceneManager:
             print(f"Error writing CAV log file: {e}")
 
     def get_vlm_merge_file_path(self, timestamp):
-        """
-        Get the file path for VLM merge decision files.
+        """Get VLM merge file path from scene config if available."""
+        if 'vlm_merge_path' in self.scene_config:
+            idx = int(timestamp)
+            filename = f"{idx:06d}.txt"
+            return os.path.join(self.scene_config['vlm_merge_path'], filename)
         
-        Parameters
-        ----------
-        timestamp : str
-            Current timestamp string (e.g., "000069")
-            
-        Returns
-        -------
-        str
-            Full path to the VLM merge decision file
-        """
+        # Fallback to relative path
         idx = int(timestamp)
         filename = f"{idx:06d}.txt"
-        base_path = "/home/po-han/Downloads/OPV2V/vlm_query_testing/plain_output/scene4_decisions"
+        base_path = "../../../OPV2V/vlm_query_testing/plain_output/scene4_decisions"
         return os.path.join(base_path, filename)
 
     def should_merge_based_on_vlm(self, vlm_text):
@@ -757,96 +749,77 @@ class SceneManager:
                                         bg_veh_content['location'],
                                         bg_veh_content['angle']))
 
-        # STOPPING SCENES
-        vlm_path = self.get_vlm_file_path(cur_timestamp)
-        if os.path.exists(vlm_path):
-            with open(vlm_path, 'r') as f:
-                vlm_text = f.read()
-            stop_flag = self.should_stop_based_on_vlm(vlm_text)
-            if stop_flag:
-                cav_to_stop = "243"
-                if cav_to_stop in self.veh_dict and cav_to_stop not in self.stopped_vehicles:
-                    vehicle = self.veh_dict[cav_to_stop]['actor']
-                    vehicle.set_autopilot(False)
-                    vehicle.apply_control(carla.VehicleControl(throttle=0.0, brake=1.0))
-                    self.stopped_vehicles.add(cav_to_stop)
-                    print(f"[SceneManager] CAV {cav_to_stop} stopped due to VLM output")
-
-                cav_to_stop = "2488"
-                if cav_to_stop in self.veh_dict and cav_to_stop not in self.stopped_vehicles:
-                    vehicle = self.veh_dict[cav_to_stop]['actor']
-                    vehicle.set_autopilot(False)
-                    vehicle.apply_control(carla.VehicleControl(throttle=0.0, brake=1.0))
-                    self.stopped_vehicles.add(cav_to_stop)
-                    print(f"[SceneManager] CAV {cav_to_stop} stopped due to VLM output")
-
-            #     cav_to_stop = "8690"
-            #     if cav_to_stop in self.veh_dict and cav_to_stop not in self.stopped_vehicles:
-            #         vehicle = self.veh_dict[cav_to_stop]['actor']
-            #         vehicle.set_autopilot(False)
-            #         vehicle.apply_control(carla.VehicleControl(throttle=0.0, brake=1.0))
-            #         self.stopped_vehicles.add(cav_to_stop)
-            #         print(f"[SceneManager] CAV {cav_to_stop} stopped due to VLM output")
-
-            #     cav_to_stop = "3152"
-            #     if cav_to_stop in self.veh_dict and cav_to_stop not in self.stopped_vehicles:
-            #         vehicle = self.veh_dict[cav_to_stop]['actor']
-            #         vehicle.set_autopilot(False)
-            #         vehicle.apply_control(carla.VehicleControl(throttle=0.0, brake=1.0))
-            #         self.stopped_vehicles.add(cav_to_stop)
-            #         print(f"[SceneManager] CAV {cav_to_stop} stopped due to VLM output")
-
-            #     cav_to_stop = "002"
-            #     if cav_to_stop in self.veh_dict and cav_to_stop not in self.stopped_vehicles:
-            #         vehicle = self.veh_dict[cav_to_stop]['actor']
-            #         vehicle.set_autopilot(False)
-            #         vehicle.apply_control(carla.VehicleControl(throttle=0.0, brake=1.0))
-            #         self.stopped_vehicles.add(cav_to_stop)
-            #         print(f"[SceneManager] CAV {cav_to_stop} stopped due to VLM output")
-
-        # MERGING SCENES
-        # vlm_merge_path = self.get_vlm_merge_file_path(cur_timestamp)
-        # if os.path.exists(vlm_merge_path):
-        #     try:
-        #         with open(vlm_merge_path, 'r') as f:
-        #             vlm_text = f.read().strip()
-        #         merge_flag = self.should_merge_based_on_vlm(vlm_text)
-        #         if merge_flag:
-        #             print(f"[SceneManager] Timestamp {cur_timestamp}: MERGE")
-
-        #             merging_vehicle_id = "1996"
+        # STOPPING
+        if self.scene_config.get('type') == 'stop':
+            vlm_path = self.get_vlm_file_path(cur_timestamp)
+            if os.path.exists(vlm_path):
+                with open(vlm_path, 'r') as f:
+                    vlm_text = f.read()
                 
-        #             if (merging_vehicle_id in self.veh_dict and 
-        #                 merging_vehicle_id not in self.steering_controlled_vehicles):
-        #                 # Positive steering = right turn, negative = left turn
-        #                 self.apply_steering_control(
-        #                     vehicle_id=merging_vehicle_id,
-        #                     steering_angle=0.4,    # Adjust for merge intensity
-        #                     duration_ticks=15,     # How long to steer
-        #                     throttle=1          # Maintain forward speed
-        #                 )
+                stop_flag = self.should_stop_based_on_vlm(vlm_text)
+                if stop_flag:
+                    # Stop the ego CAV (the one making the decision to stop)
+                    ego_cav = self.scene_config.get('ego_cav')
+                    if ego_cav and ego_cav in self.veh_dict and ego_cav not in self.stopped_vehicles:
+                        vehicle = self.veh_dict[ego_cav]['actor']
+                        vehicle.set_autopilot(False)
+                        vehicle.apply_control(carla.VehicleControl(throttle=0.0, brake=1.0))
+                        self.stopped_vehicles.add(ego_cav)
+                        print(f"[SceneManager] Ego CAV {ego_cav} stopped due to VLM output")
+
+        # MERGING
+        elif self.scene_config.get('type') == 'merge':
+            vlm_merge_path = self.get_vlm_merge_file_path(cur_timestamp)
+            if os.path.exists(vlm_merge_path):
+                try:
+                    with open(vlm_merge_path, 'r') as f:
+                        vlm_text = f.read().strip()
+                    
+                    merge_flag = self.should_merge_based_on_vlm(vlm_text)
+                    if merge_flag:
+                        print(f"[SceneManager] Timestamp {cur_timestamp}: MERGE")
+                        
+                        # Get merge parameters from config
+                        merge_params = self.scene_config.get('merge_params', {})
+                        
+                        # Apply steering to ego CAV (the one merging)
+                        ego_cav = self.scene_config.get('ego_cav')
+                        if (ego_cav and ego_cav in self.veh_dict and 
+                            ego_cav not in self.steering_controlled_vehicles):
+                            
+                            self.apply_steering_control(
+                                vehicle_id=ego_cav,
+                                steering_angle=merge_params.get('steering_angle', 0.4),
+                                duration_ticks=merge_params.get('duration_ticks', 15),
+                                throttle=merge_params.get('throttle', 1.0)
+                            )
                 
-        #     except Exception as e:
-        #         print(f"[SceneManager] Error reading VLM merge file {vlm_merge_path}: {e}")
+                except Exception as e:
+                    print(f"[SceneManager] Error reading VLM merge file {vlm_merge_path}: {e}")
+            
+            # Update steering controlled vehicles
+            self.update_steering_controlled_vehicles()
 
-        # self.update_steering_controlled_vehicles()
-
-
-        # ego_cav_comms = "1996"
-        # ego_goal_filepath = "/home/po-han/Downloads/OPV2V/test/2021_08_20_21_10_24/1996"
-
-        # comms = self.get_cav_communications(ego_cav_comms)
-        # ego_goal = self.get_ego_goal(ego_goal_filepath, cur_timestamp)
-
-        # accepted_cavs = self.filter_accepted_cavs(ego_cav_comms, comms, ego_goal,epsilon=50)
-        # self.calculate_bandwidth_metrics(accepted_cavs, cur_timestamp)
-
-        # self.log_accepted_cavs(cur_timestamp, accepted_cavs)
-
-
-        # if accepted_cavs:
-        #     print("Accepted_CAVS",accepted_cavs)
-
+        # === HANDLE BANDWIDTH ANALYSIS (if enabled) ===
+        if self.scene_config.get('enable_bandwidth_analysis', False):
+            ego_cav = self.scene_config.get('ego_cav')
+            if ego_cav:
+                comms = self.get_cav_communications(ego_cav)
+                ego_goal = self.get_ego_goal(cur_timestamp)
+                
+                accepted_cavs = self.filter_accepted_cavs(
+                    ego_cav, 
+                    comms, 
+                    ego_goal, 
+                    epsilon=self.scene_config.get('epsilon', 50)
+                )
+                
+                self.calculate_bandwidth_metrics(accepted_cavs, cur_timestamp)
+                self.log_accepted_cavs(cur_timestamp, accepted_cavs)
+                
+                if accepted_cavs:
+                    print("Accepted_CAVS", accepted_cavs)
+                    
         self.cur_count += 1
         self.destroy_vehicle(cur_timestamp)
         self.world.tick()
