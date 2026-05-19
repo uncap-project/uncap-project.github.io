@@ -119,6 +119,22 @@
   </div>
 </section>
 
+<section class="section">
+  <div class="container is-max-desktop" style="max-width: 100em;">
+    <div class="column has-text-centered">
+      <div class="content" style="display: flex; flex-direction: column; align-items: center;">
+        <iframe src="https://www.youtube.com/embed/zo9VBeH5qlw"
+                frameborder="0"
+                allow="autoplay; encrypted-media"
+                allowfullscreen
+                width="800"
+                style="aspect-ratio: 16 / 9; margin-bottom: 20px; border-radius: 8px;">
+        </iframe>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section class="hero is-light">
   <div class="container is-max-desktop">
     <!-- Abstract. -->
@@ -299,16 +315,53 @@ driving decisions with an associated decision uncertainty score for safe and int
 <section class="section" id="BibTeX">
   <div class="container is-max-desktop content">
     <h2 class="title">BibTeX</h2>
-    <pre><code>@inproceedings{
-  bhatt2025uncap,
+    <div style="position: relative;">
+      <pre><code><span style="color: red;">@inproceedings</span>{<span style="color: purple;">bhatt2025uncap</span>,
   title={{UNCAP}: Uncertainty-Guided Planning Using Natural Language Communication for Cooperative Autonomous Vehicles},
   author={Neel P. Bhatt and Po-han Li and Kushagra Gupta and Rohan Siva and Daniel Milan and Alexander Todd Hogue and Sandeep P. Chinchali and David Fridovich-Keil and Zhangyang Wang and ufuk topcu},
   booktitle={The 25th International Conference on Autonomous Agents and Multi-Agent Systems},
   year={2025},
   url={https://openreview.net/forum?id=aYlKa5ppLh}
 }</code></pre>
+      <button id="copyBibtex" class="button is-small"
+              style="position: absolute; top: 10px; right: 10px; opacity: 0.7; background-color: rgba(255, 255, 255, 0.7);"
+              onmouseover="this.style.opacity='1'"
+              onmouseout="this.style.opacity='0.7'"
+              onclick="copyBibtexToClipboard()">
+        <span class="icon">
+          <i class="fas fa-copy"></i>
+        </span>
+        <span>Copy</span>
+      </button>
+    </div>
   </div>
 </section>
+
+<script>
+function copyBibtexToClipboard() {
+  const bibtexText = `@inproceedings{bhatt2025uncap,
+  title={{UNCAP}: Uncertainty-Guided Planning Using Natural Language Communication for Cooperative Autonomous Vehicles},
+  author={Neel P. Bhatt and Po-han Li and Kushagra Gupta and Rohan Siva and Daniel Milan and Alexander Todd Hogue and Sandeep P. Chinchali and David Fridovich-Keil and Zhangyang Wang and ufuk topcu},
+  booktitle={The 25th International Conference on Autonomous Agents and Multi-Agent Systems},
+  year={2025},
+  url={https://openreview.net/forum?id=aYlKa5ppLh}
+}`;
+
+  navigator.clipboard.writeText(bibtexText).then(function() {
+    const button = document.getElementById('copyBibtex');
+    const originalHTML = button.innerHTML;
+    const originalStyle = button.getAttribute('style');
+
+    button.innerHTML = '<span class="icon"><i class="fas fa-check"></i></span><span>Copied!</span>';
+    button.style = "position: absolute; top: 10px; right: 10px; opacity: 1; background-color: #48c774;";
+
+    setTimeout(function() {
+      button.innerHTML = originalHTML;
+      button.setAttribute('style', originalStyle);
+    }, 2000);
+  });
+}
+</script>
 
 
 <footer class="footer is-light">
