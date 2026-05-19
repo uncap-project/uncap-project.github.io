@@ -75,7 +75,7 @@
           </div>
 
           <div class="is-size-5 publication-authors">
-            <p><b><i>AAMAS 2026 Best Paper Nomination</i></b></p>
+            <p style="display: inline-block; background-color: #a8d26d; color: #333; font-size: 1.25rem; font-weight: 600; padding: 10px 28px; border-radius: 12px; margin-top: 10px;">🏅 Best Paper Nomination – AAMAS 2026</p>
           </div>
           
           <div class="column has-text-centered">
@@ -311,6 +311,118 @@ driving decisions with an associated decision uncertainty score for safe and int
   </div>
 </section> -->
 
+<style>
+.link-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.link-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.link-card .icon {
+  color: #4A90E2;
+  margin-bottom: 10px;
+}
+
+.link-card .button.is-link {
+  background-color: #4A90E2;
+  border: none;
+}
+
+.link-card .button.is-link:hover {
+  background-color: #357ABD;
+}
+
+.link-card .card-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+</style>
+
+<section class="hero is-small is-light">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3 has-text-centered"><br>Related Links</h2>
+
+        <div class="columns is-multiline is-centered">
+
+          <!-- arXiv Paper -->
+          <div class="column is-4">
+            <div class="card link-card">
+              <div class="card-content has-text-centered">
+                <span class="icon is-large">
+                  <i class="ai ai-arxiv fa-2x"></i>
+                </span>
+                <h3 class="title is-5">arXiv Paper</h3>
+                <a target="_blank" rel="noopener noreferrer"
+                  href="https://arxiv.org/abs/2510.12992"
+                  class="button is-link is-rounded">Read Paper</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- GitHub Code -->
+          <div class="column is-4">
+            <div class="card link-card">
+              <div class="card-content has-text-centered">
+                <span class="icon is-large">
+                  <i class="fab fa-github fa-2x"></i>
+                </span>
+                <h3 class="title is-5">Source Code</h3>
+                <a target="_blank" rel="noopener noreferrer"
+                  href="https://github.com/uncap-project/uncap-project.github.io"
+                  class="button is-link is-rounded">View Repository</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- OpenReview -->
+          <div class="column is-4">
+            <div class="card link-card">
+              <div class="card-content has-text-centered">
+                <span class="icon is-large">
+                  <i class="fas fa-file-pdf fa-2x"></i>
+                </span>
+                <h3 class="title is-5">OpenReview</h3>
+                <a target="_blank" rel="noopener noreferrer"
+                  href="https://openreview.net/forum?id=aYlKa5ppLh"
+                  class="button is-link is-rounded">View Reviews</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Demo Notebook -->
+          <div class="column is-4">
+            <div class="card link-card">
+              <div class="card-content has-text-centered">
+                <span class="icon is-large">
+                  <i class="fas fa-book-open fa-2x"></i>
+                </span>
+                <h3 class="title is-5">Demo Notebook</h3>
+                <a target="_blank" rel="noopener noreferrer"
+                  href="https://github.com/uncap-project/uncap-project.github.io/blob/main/OPV2V/run.ipynb"
+                  class="button is-link is-rounded">View Notebook</a>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <br>
+      </div>
+    </div>
+  </div>
+</section>
 
 <section class="section" id="BibTeX">
   <div class="container is-max-desktop content">
